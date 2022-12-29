@@ -1,23 +1,26 @@
 {
   "expo": {
-    "name": "tarefas_app",
+    "name": "Tarefas",
+    "description": "Editor de tarefas",
     "slug": "tarefas_app",
     "version": "1.0.0",
+    "entryPoint": "./index.tsx",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon_app_tasks.png",
+    "notification": {
+      "icon": "./assets/images/icon_app_tasks.png"
+    },
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/login.jpg",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -28,7 +31,7 @@
       }
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon_app_tasks.png"
     }
   }
 }

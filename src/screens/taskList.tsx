@@ -12,10 +12,12 @@ import {
 
 import todayImage from "../../assets/images/today.jpg";
 import { tasksMok } from "../mock/tasks";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //components
 import Tasks from "../components/Tasks";
 import Icon from "react-native-vector-icons/FontAwesome";
+import AddTask from "./addTask";
 
 //utils
 import commonStyles from "../commonStyles";
@@ -26,8 +28,33 @@ import { ITasksValues } from "../interfaces/ITasks";
 
 const TaskList = () => {
   const [stateTasks, setStateTasks] = useState<ITasksValues[]>(tasksMok);
-  const [filter, setFilter] = useState<boolean>(true);
+  const [filter, setFilter] = useState(true);
   const [visibleTasks, setVisibleTasks] = useState<ITasksValues[]>([]);
+  const [showAddTask, setShowAddTask] = useState(false);
+
+  
+
+  
+  useEffect(() => {
+    const getStorage = async () => {
+      try {
+        const tasksState = await AsyncStorage.getItem("tasks");
+
+        if (tasksState !== null) {
+          setStateTasks(JSON.parse(tasksState));
+        }
+        
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getStorage()
+  
+  }, [AsyncStorage]);
+
+
+  
 
   const filterTasks = useCallback(() => {
     if (filter) {
@@ -35,15 +62,28 @@ const TaskList = () => {
     }
 
     if (!filter) {
-      setVisibleTasks([...stateTasks.filter((task) => task.doneAt === null)]);
+      setVisibleTasks([...stateTasks?.filter((task) => task.doneAt === null)]);
     }
-  }, [filter]);
 
-  const toggleTask = (id: number) => {
+    try {
+      AsyncStorage?.setItem("tasks", JSON.stringify(stateTasks));
+    } catch (error) {
+      console.log('error setStorage' + error);
+      
+    }
+
+   
+  }, [filter, stateTasks]);
+
+  useEffect(() => {
+    filterTasks();
+  }, [filterTasks]);
+
+  const handleToggleTask = (id: number) => {
     setStateTasks(
       stateTasks.map((task: ITasksValues) => {
         if (task.id === id) {
-          task.doneAt = !!task.doneAt ? null : new Date(1995, 11, 17);
+          task.doneAt = !!task.doneAt ? null : new Date();
         }
 
         return task;
@@ -52,20 +92,32 @@ const TaskList = () => {
     filterTasks();
   };
 
-  const toggleFilter = () => {
+  const handleToggleFilter = () => {
     setFilter(!filter);
     filterTasks();
   };
 
-  useEffect(() => {
+  const handleAddTask = (newTask: any) => {
+    setStateTasks((state) => [...state, newTask]);
+    setShowAddTask(false);
     filterTasks();
-  }, [filterTasks]);
+  };
+
+  const handleOnDelete = (id: number) => {
+    setStateTasks(stateTasks.filter((task) => task.id !== id));
+    filterTasks();
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <AddTask
+        isVisible={showAddTask}
+        onCancel={() => setShowAddTask(false)}
+        onSaveTask={handleAddTask}
+      />
       <ImageBackground style={styles.background} source={todayImage}>
         <View style={styles.iconBar}>
-          <TouchableOpacity onPress={toggleFilter}>
+          <TouchableOpacity onPress={handleToggleFilter}>
             <Icon
               name={filter ? "eye" : "eye-slash"}
               size={20}
@@ -78,21 +130,29 @@ const TaskList = () => {
           <Text style={styles.subTitle}>{today}</Text>
         </View>
       </ImageBackground>
-      <View style={styles.taskList}>
+      <View style={styles?.taskList}>
         <FlatList
           data={visibleTasks}
-          keyExtractor={(item) => `${item.id}`}
+          keyExtractor={(item) => `${item?.id}`}
           renderItem={({ item }) => (
             <Tasks
-              description={item.description}
-              estimateAt={item.estimateAt}
-              doneAt={item.doneAt}
-              id={item.id}
-              toggleTask={toggleTask}
+              description={item?.description}
+              estimateAt={item?.estimateAt}
+              doneAt={item?.doneAt}
+              id={item?.id}
+              toggleTask={handleToggleTask}
+              onDelete={handleOnDelete}
             />
           )}
         />
       </View>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={styles.addButton}
+        onPress={() => setShowAddTask(true)}
+      >
+        <Icon name="plus" size={20} color={commonStyles.colors.secondary} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -129,6 +189,17 @@ export const styles = StyleSheet.create({
     marginRight: 20,
     alignItems: "flex-start",
     justifyContent: "flex-end",
+  },
+  addButton: {
+    position: "absolute",
+    right: 30,
+    bottom: 30,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: commonStyles.colors.today,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

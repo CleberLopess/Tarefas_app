@@ -1,8 +1,10 @@
 import React, {memo, useCallback} from "react";
-import { SafeAreaView, View, Text, StyleSheet, TouchableWithoutFeedback } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableWithoutFeedback, TouchableOpacity, Image } from "react-native";
+
 
 //components
 import Icon from "react-native-vector-icons/FontAwesome";
+import {Swipeable, GestureHandlerRootView} from 'react-native-gesture-handler'
 
 //utils
 import commonStyles from "../../commonStyles";
@@ -12,7 +14,7 @@ import {formatDate} from '../../../hooks/useMoment'
 import { ITasks } from "../../interfaces/ITasks";
 
 
-const Tasks = ({ description, doneAt, estimateAt, toggleTask, id }: ITasks) => {
+const Tasks = ({ description, doneAt, estimateAt, toggleTask, id, onDelete }: ITasks) => {
   const doneOrNotStyle = doneAt ? { textDecorationLine: "line-through" } : {};
 
   const getCheckView = useCallback(() => {
@@ -38,30 +40,56 @@ const Tasks = ({ description, doneAt, estimateAt, toggleTask, id }: ITasks) => {
     return `Criada em: ${formattedDate}`
   },[doneAt, estimateAt])
 
+  const getRightContent = () => {
+
+    return (
+      <TouchableOpacity style={styles.right} onPress={() => onDelete(id)}>
+        <Icon name='trash' size={30} color='#fff' />
+      </TouchableOpacity>
+    )
+  }
+
+  const getLeftContent = () => {
+
+    return (
+      <View style={styles.left}>
+        <Icon name='trash' size={30} color='#fff' style={styles.excludeIcon} />
+        <Text style={styles.excludeText}>Excluir</Text>
+      </View>
+    )
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <GestureHandlerRootView>
+    <Swipeable renderRightActions={getRightContent} renderLeftActions={getLeftContent} onSwipeableLeftOpen={() => onDelete(id)} >
+    <SafeAreaView style={styles.wrapper}>
         <TouchableWithoutFeedback onPress={() => toggleTask(id)}>
             <View style={styles.checkContainer}>
                 {getCheckView()}
             </View>
         </TouchableWithoutFeedback>
-      <View>
-        <Text style={[styles.description, doneOrNotStyle as any]}>
-          {description}
-        </Text>
-        <Text style={styles.date}>{changeTextDate()}</Text>
-      </View>
+        
+          <View>
+            <Text style={[styles.description, doneOrNotStyle as any]}>
+              {description}
+            </Text>
+            <Text style={styles.date}>{changeTextDate()}</Text>
+          </View>
     </SafeAreaView>
+    </Swipeable>
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flexDirection: "row",
     borderColor: "#aaa",
     borderBottomWidth: 1,
     alignItems: "center",
     paddingVertical: 10,
+    backgroundColor: '#fff'
+   
   },
   checkContainer: {
     width: "20%",
@@ -91,6 +119,27 @@ const styles = StyleSheet.create({
     color: commonStyles.colors.subtext,
     fontSize: 12,
   },
+  right: {
+    backgroundColor: 'red',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingHorizontal: 20
+  },
+  left: {
+    flex: 1,
+    backgroundColor: 'red',
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  excludeIcon: {
+    marginLeft: 10
+  },
+  excludeText: {
+    color: '#fff',
+    fontSize: 20,
+    margin: 10
+  }
 });
 
 export default memo(Tasks);

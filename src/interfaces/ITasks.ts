@@ -3,6 +3,7 @@ export interface ITasks {
   estimateAt: Date;
   doneAt: Date | null;
   toggleTask(id: number): void;
+  onDelete(id: number): void;
   id: number;
 }
 

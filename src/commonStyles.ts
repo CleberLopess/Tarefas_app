@@ -3,6 +3,7 @@ const tintColorDark = "#fff";
 
 export default {
   colors: {
+    today: "#b13b44",
     secondary: "#fff",
     mainText: "#222",
     subtext: "#555",
